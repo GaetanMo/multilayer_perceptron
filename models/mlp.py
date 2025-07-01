@@ -3,6 +3,38 @@ from .graph.drawing import draw_loss
 from .graph.drawing import draw_accuracy
 import numpy as np
 
+graph_epoch = []
+graph_losses_train = []
+graph_losses_valid = []
+graph_train_accuracy = []
+graph_validation_accuracy = []
+best_loss_validation = float('inf')
+patience = 5
+wait = 0
+
+def early_stopping(loss_validation):
+	global best_loss_validation, wait
+	if loss_validation < best_loss_validation:
+		best_loss_validation = loss_validation
+		wait = 0
+		return 0
+	else:
+		wait += 1
+		if wait >= patience:
+			print("Early_stopping triggered")
+			return 1
+
+def is_correct(output, label):
+	target = [1, 0] if label == "B" else [0, 1]
+	output = np.array(output)
+	target = np.array(target)
+	predicted_class = np.argmax(output)
+	target_class = 0 if label == "B" else 1
+	if predicted_class == target_class:
+		return 1
+	else:
+		return 0
+
 def cross_entropy(target, output):
 	output = np.clip(output, 1e-9, 1.0)
 	return -np.sum(target * np.log(output))
@@ -54,15 +86,11 @@ class MLP:
 
 		self.initialize_weights()
 
-	def train(self, df_train, df_valid, epochs=50, lr=0.01, batch_size=8):
-		graph_epoch = []
-		graph_losses_train = []
-		graph_losses_valid = []
-		graph_train_accuracy = []
-		graph_validation_accuracy = []
+	def train(self, df_train, df_valid, epochs=100, lr=0.01, batch_size=8):
 		for epoch in range(epochs):
 			load_weights(self.layers)
-			epoch_loss_train = 0
+			total_loss_epoch_train = 0
+			total_loss_epoch_validation = 0
 			num_batches = 0
 			accuracy = 0
 			for i in range(0, len(df_train), batch_size):
@@ -72,27 +100,19 @@ class MLP:
 				for _, row in batch.iterrows():
 					output = row[2:].values
 					label = row[1]
-
 					for layer in self.layers:
 						output = layer.go_forward(output)
-
+					if is_correct(output, label) == 1:
+						accuracy +=1
 					target = [1, 0] if label == "B" else [0, 1]
 					output = np.array(output)
 					target = np.array(target)
-					predicted_class = np.argmax(output)
-					target_class = 0 if label == "B" else 1
-					if predicted_class == target_class:
-						accuracy += 1
-					loss = cross_entropy(target, output)
+					total_loss_epoch_train += cross_entropy(target, output)
 					batch_delta.append(output - target)
 				mean_delta = np.mean(batch_delta, axis=0)
 				self.layers[-1].backpropagation(mean_delta, lr) # le -1 permet d'acceder a la derniere couche de la liste
 				save_weights(self.layers)
-				epoch_loss_train += loss
 				num_batches += 1
-				mean_epoch_loss_train = epoch_loss_train / num_batches
-			graph_epoch.append(epoch)
-			graph_losses_train.append(mean_epoch_loss_train)
 			graph_train_accuracy.append((accuracy / len(df_train)) * 100)
 			accuracy = 0
 			for _, row in df_valid.iterrows():
@@ -103,19 +123,22 @@ class MLP:
 				target = [1, 0] if label == "B" else [0, 1]
 				output = np.array(output)
 				target = np.array(target)
-
-				loss = cross_entropy(target, output)
+				total_loss_epoch_validation += cross_entropy(target, output)
 				output = np.array(output)
 				predicted_class = np.argmax(output)
 				target_class = 0 if label == "B" else 1
 				if predicted_class == target_class:
 					accuracy += 1
-			accuracy = (accuracy / len(df_valid)) * 100
-			graph_validation_accuracy.append(accuracy)
-			print(f"Epoch {epoch+1}, Loss: {loss:.4f}, Accuracy: {accuracy:.2f}%")
-			graph_losses_valid.append(loss)
+			graph_losses_valid.append(total_loss_epoch_validation / len(df_valid))
+			graph_losses_train.append(total_loss_epoch_train / len(df_train))
+			graph_validation_accuracy.append((accuracy / len(df_valid)) * 100)
+			graph_epoch.append(epoch)
+			print(f"Epoch {epoch+1} - loss: {total_loss_epoch_train / len(df_train)} - val_loss:{total_loss_epoch_validation / len(df_valid):.4f} - Accuracy: {accuracy / len(df_valid) * 100:.2f}%")
+			if early_stopping(total_loss_epoch_validation / len(df_valid)) == 1:
+				break
 		draw_loss(graph_epoch, graph_losses_train, graph_losses_valid)
 		draw_accuracy(graph_epoch, graph_train_accuracy, graph_validation_accuracy)
+
 	def predict(self, df):
 		pass
 		# load_weights(self.layers)

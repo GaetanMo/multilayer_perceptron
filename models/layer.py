@@ -44,7 +44,7 @@ class Layer:
 		input_batch = np.array(self.last_input_batch)
 		last_input = np.mean(input_batch, axis=0)
 		last_input = np.array(last_input, dtype=np.float64)
-		
+
 		for i in range(len(self.perceptrons)):
 			weight_update = -lr * delta[i] * last_input
 			self.perceptrons[i] += weight_update
