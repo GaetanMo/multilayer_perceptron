@@ -10,7 +10,7 @@ def cross_entropy(target, output):
 def save_weights(layers, filename="weights.npz"):
 	weights_dict = {}
 	for idx, layer in enumerate(layers):
-		weights_matrix = np.array([p.weight for p in layer.perceptrons])
+		weights_matrix = layer.perceptrons
 		weights_dict[f"layer_{idx}"] = weights_matrix
 	np.savez(filename, **weights_dict)
 	return
@@ -45,7 +45,7 @@ class MLP:
 		#Hidden layers
 		prev_layer = None
 		for units in hidden_layers:
-			layer = Layer(prev_layer, units, "sigmoid")
+			layer = Layer(prev_layer, units, "Relu")
 			self.layers.append(layer)
 			prev_layer = layer
 

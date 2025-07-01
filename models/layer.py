@@ -1,4 +1,3 @@
-from .perceptron import Perceptron
 import numpy as np
 
 def relu_derivative(z):
@@ -10,56 +9,53 @@ class Layer:
 		self.activation = activation
 		self.size = size
 		self.last_input_batch = []
+		self.z_batch = []
 
 		if previous_layer is None:
 			self.input_size = 30
 		else:
 			self.input_size = previous_layer.size
 
-		self.perceptrons = []
-		for _ in range (size):
-			p = Perceptron()
-			self.perceptrons.append(p)
+		self.perceptrons = np.random.randn(size, self.input_size + 1) * 0.1
 
 	def softmax(self, z_values):
-		z_values = np.array(z_values)
+		z_values = np.array(z_values, dtype=np.float64)
 		exp_z = np.exp(z_values - np.max(z_values))
 		return exp_z / np.sum(exp_z)
 
 	def set_weights(self, weights_matrix):
-		for i, perceptron in enumerate(self.perceptrons):
-			perceptron.set_weight(weights_matrix[i])
+		self.perceptrons = weights_matrix
 
 	def go_forward(self, inputs):
 		inputs_with_bias = np.append(inputs, 1)
 		self.last_input_batch.append(inputs_with_bias)
-		if self.activation == "sigmoid":
+		if self.activation == "Relu":
 			outputs = []
-			for i in range (self.size):
-				output = self.perceptrons[i].activate_relu(inputs_with_bias)
-				outputs.append(output)
+			z = np.dot(self.perceptrons, inputs_with_bias)
+			self.z_batch.append(z)
+			output = np.maximum(0, z)
+			outputs.append(output)
 			return outputs
-
 		if self.activation == "softmax":
-			z_values = [p.compute_z(inputs_with_bias) for p in self.perceptrons]
-			return self.softmax(z_values)
+			z = np.dot(self.perceptrons, inputs_with_bias)
+			return self.softmax(z)
 
 	def backpropagation(self, delta, lr):
 		input_batch = np.array(self.last_input_batch)
 		last_input = np.mean(input_batch, axis=0)
-		for i, perceptron in enumerate(self.perceptrons):
+		last_input = np.array(last_input, dtype=np.float64)
+		
+		for i in range(len(self.perceptrons)):
 			weight_update = -lr * delta[i] * last_input
-			perceptron.set_weight(perceptron.weight + weight_update)
-
+			self.perceptrons[i] += weight_update
+		
 		if self.previous_layer is not None:
-			weights_matrix = np.array([p.weight[:-1] for p in self.perceptrons])
-			z_means = np.array([np.mean(p.z_batch) for p in self.previous_layer.perceptrons])
+			weights_matrix = self.perceptrons[:, :-1]
+			z_means = np.mean(self.previous_layer.z_batch, axis=0)
 			delta_prev = np.dot(weights_matrix.T, delta) * relu_derivative(z_means)
 			self.last_input_batch.clear()
-			for p in self.perceptrons:
-				p.z_batch.clear()
+			self.z_batch.clear()
 			self.previous_layer.backpropagation(delta_prev, lr)
 		else:
 			self.last_input_batch.clear()
-			for p in self.perceptrons:
-				p.z_batch.clear()
+			self.z_batch.clear()
