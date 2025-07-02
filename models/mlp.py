@@ -86,7 +86,7 @@ class MLP:
 
 		self.initialize_weights()
 
-	def train(self, df_train, df_valid, epochs=100, lr=0.01, batch_size=8):
+	def train(self, df_train, df_valid, epochs=100, lr=0.035, batch_size=8):
 		for epoch in range(epochs):
 			load_weights(self.layers)
 			total_loss_epoch_train = 0
