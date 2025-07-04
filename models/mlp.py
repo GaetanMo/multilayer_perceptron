@@ -9,7 +9,7 @@ graph_losses_valid = []
 graph_train_accuracy = []
 graph_validation_accuracy = []
 best_loss_validation = float('inf')
-patience = 5
+patience = 15
 wait = 0
 
 def early_stopping(loss_validation):
@@ -86,7 +86,7 @@ class MLP:
 
 		self.initialize_weights()
 
-	def train(self, df_train, df_valid, epochs=100, lr=0.035, batch_size=8):
+	def train(self, df_train, df_valid, epochs=100, lr=0.0003, batch_size=8):
 		for epoch in range(epochs):
 			load_weights(self.layers)
 			total_loss_epoch_train = 0

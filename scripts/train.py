@@ -22,5 +22,5 @@ def train_model():
 	df_train, mean, std = normalize(df_train)
 	df_valid = normalize_with_mean_std(df_valid, mean, std)
 
-	mlp = MLP(30, 2, [10, 10])
+	mlp = MLP(30, 2, [6, 6])
 	mlp.train(df_train, df_valid)

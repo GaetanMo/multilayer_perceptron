@@ -10,14 +10,18 @@ class Layer:
 		self.size = size
 		self.last_input_batch = []
 		self.z_batch = []
-
 		if previous_layer is None:
 			self.input_size = 30
 		else:
 			self.input_size = previous_layer.size
 
 		self.perceptrons = np.random.randn(size, self.input_size + 1) * 0.1
-
+		self.m = np.zeros_like(self.perceptrons)  # Moment du premier ordre
+		self.v = np.zeros_like(self.perceptrons)  # Moment du second ordre
+		self.t = 0  # Compteur d'itérations
+		self.beta1 = 0.9    # Coefficient pour m
+		self.beta2 = 0.999  # Coefficient pour v
+		self.epsilon = 1e-8 # Terme de stabilisation
 	def softmax(self, z_values):
 		z_values = np.array(z_values, dtype=np.float64)
 		exp_z = np.exp(z_values - np.max(z_values))
@@ -41,13 +45,24 @@ class Layer:
 			return self.softmax(z)
 
 	def backpropagation(self, delta, lr):
+		self.t += 1
 		input_batch = np.array(self.last_input_batch)
 		last_input = np.mean(input_batch, axis=0)
 		last_input = np.array(last_input, dtype=np.float64)
 
 		for i in range(len(self.perceptrons)):
-			self.perceptrons[i] -= lr * delta[i] * last_input
-		
+			# For simple descent gradient
+			# self.perceptrons[i] -= lr * delta[i] * last_input
+
+			# For Adam formules
+			g_t = delta[i] * last_input # get the gradient
+			self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * g_t # Actualise m
+			self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (g_t ** 2) # Actualise v
+
+			m_hat = self.m[i] / (1 - self.beta1 ** self.t) # Correction of biasis, tend to 0, more iteration == less correction
+			v_hat = self.v[i] / (1 - self.beta2 ** self.t)
+			self.perceptrons[i] -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)	# Actualise weights
+
 		if self.previous_layer is not None:
 			weights_matrix = self.perceptrons[:, :-1]
 			z_means = np.mean(self.previous_layer.z_batch, axis=0)
