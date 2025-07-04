@@ -46,8 +46,7 @@ class Layer:
 		last_input = np.array(last_input, dtype=np.float64)
 
 		for i in range(len(self.perceptrons)):
-			weight_update = -lr * delta[i] * last_input
-			self.perceptrons[i] += weight_update
+			self.perceptrons[i] -= lr * delta[i] * last_input
 		
 		if self.previous_layer is not None:
 			weights_matrix = self.perceptrons[:, :-1]
