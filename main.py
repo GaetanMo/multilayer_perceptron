@@ -13,4 +13,4 @@ if __name__ == "__main__":
 	elif args.action == "train":
 		train_model()
 	elif args.action == "predict":
-		predict_model()
+		predict_model("data/raw/data.csv")

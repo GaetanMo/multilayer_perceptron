@@ -1,5 +1,6 @@
 import pandas as pd
 from models.mlp import MLP
+import pickle
 
 def normalize_with_mean_std(df, mean, std):
 	cols_to_normalize = df.columns[2:]
@@ -24,3 +25,5 @@ def train_model():
 
 	mlp = MLP(30, 2, [6, 6])
 	mlp.train(df_train, df_valid)
+	with open('model.pkl', 'wb') as f:
+		pickle.dump(mlp, f)

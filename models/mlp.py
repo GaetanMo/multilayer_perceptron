@@ -2,6 +2,7 @@ from .layer import Layer
 from .graph.drawing import draw_loss
 from .graph.drawing import draw_accuracy
 import numpy as np
+import pandas as pd
 
 graph_epoch = []
 graph_losses_train = []
@@ -86,9 +87,8 @@ class MLP:
 
 		self.initialize_weights()
 
-	def train(self, df_train, df_valid, epochs=100, lr=0.0003, batch_size=8):
+	def train(self, df_train, df_valid, epochs=70, lr=0.0003, batch_size=8):
 		for epoch in range(epochs):
-			load_weights(self.layers)
 			total_loss_epoch_train = 0
 			total_loss_epoch_validation = 0
 			num_batches = 0
@@ -111,7 +111,6 @@ class MLP:
 					batch_delta.append(output - target)
 				mean_delta = np.mean(batch_delta, axis=0)
 				self.layers[-1].backpropagation(mean_delta, lr) # le -1 permet d'acceder a la derniere couche de la liste
-				save_weights(self.layers)
 				num_batches += 1
 			graph_train_accuracy.append((accuracy / len(df_train)) * 100)
 			accuracy = 0
@@ -140,22 +139,21 @@ class MLP:
 		draw_accuracy(graph_epoch, graph_train_accuracy, graph_validation_accuracy)
 
 	def predict(self, df):
-		pass
-		# load_weights(self.layers)
-		# for _, row in df.iterrows():
-		# 	output = row[2:].values
-		# 	for layer in self.layers:
-		# 		output = layer.go_forward(output)
-		# 	output = np.array(output)
-		
-		# print(f"Epoch {epoch+1}, Loss: {total_loss:.4f}, Accuracy: {accuracy:.2f}%")
+		for index, row in df.iterrows():
+			output = row[2:].values
+			for layer in self.layers:
+				output = layer.go_forward(output)
+			output = np.array(output)
+			predicted_class = np.argmax(output)
+			if predicted_class == 0:
+				predicted_class = "B"
+			else:
+				predicted_class = "M"
+			print(f"Prediction {index + 1} : {predicted_class}")
 
-	def initialize_weights(self, filename="weights.npz"):
-		weights_dict = {}
+	def initialize_weights(self):
 		for i, layer in enumerate(self.layers):
 			input_size = layer.input_size
 			size = layer.size
 			weights_matrix = np.random.randn(size, input_size + 1) * 0.1
 			layer.set_weights(weights_matrix)
-			weights_dict[f"layer_{i}"] = weights_matrix
-		np.savez(filename, **weights_dict)
