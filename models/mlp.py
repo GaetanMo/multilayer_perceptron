@@ -59,7 +59,7 @@ def load_weights(layers, filename="weights.npz"):
 			print(f"Warning: {key} not found in {filename}")
 
 class MLP:
-	def __init__(self, input_layer=None, output_layer=None, hidden_layers=None, loss=None, learning_rate=None):
+	def __init__(self, input_layer=None, output_layer=None,  hidden_layers=None, epochs=None, batch_size=None, learning_rate=None, loss=None):
 		if input_layer is None:
 			input_layer = 30
 		if output_layer is None:
@@ -69,11 +69,16 @@ class MLP:
 		if loss is None:
 			loss = 'categoricalCrossentropy'
 		if learning_rate is None:
-			learning_rate = 0.01
-
+			learning_rate = 0.001
+		if epochs is None:
+			epochs = 50
+		if batch_size is None:
+			batch_size = 8
 		self.loss = loss
-		self.learning_rate = learning_rate
+		self.lr = learning_rate
 		self.layers = []
+		self.epochs = epochs
+		self.batch_size = batch_size
 
 		#Hidden layers
 		prev_layer = None
@@ -87,14 +92,14 @@ class MLP:
 
 		self.initialize_weights()
 
-	def train(self, df_train, df_valid, epochs=70, lr=0.0003, batch_size=8):
-		for epoch in range(epochs):
+	def train(self, df_train, df_valid):
+		for epoch in range(self.epochs):
 			total_loss_epoch_train = 0
 			total_loss_epoch_validation = 0
 			num_batches = 0
 			accuracy = 0
-			for i in range(0, len(df_train), batch_size):
-				batch = df_train.iloc[i:i+batch_size]
+			for i in range(0, len(df_train), self.batch_size):
+				batch = df_train.iloc[i:i+self.batch_size]
 				batch_delta = []
 				batch_delta.clear()
 				for _, row in batch.iterrows():
@@ -110,7 +115,7 @@ class MLP:
 					total_loss_epoch_train += cross_entropy(target, output)
 					batch_delta.append(output - target)
 				mean_delta = np.mean(batch_delta, axis=0)
-				self.layers[-1].backpropagation(mean_delta, lr) # le -1 permet d'acceder a la derniere couche de la liste
+				self.layers[-1].backpropagation(mean_delta, self.lr)
 				num_batches += 1
 			graph_train_accuracy.append((accuracy / len(df_train)) * 100)
 			accuracy = 0
