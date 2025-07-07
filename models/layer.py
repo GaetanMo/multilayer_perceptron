@@ -22,6 +22,7 @@ class Layer:
 		self.beta1 = 0.9
 		self.beta2 = 0.999
 		self.epsilon = 1e-8
+	
 	def softmax(self, z_values):
 		z_values = np.array(z_values, dtype=np.float64)
 		exp_z = np.exp(z_values - np.max(z_values))

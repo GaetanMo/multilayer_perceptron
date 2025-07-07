@@ -16,7 +16,7 @@ if __name__ == "__main__":
 	parser_train.add_argument('--learning_rate', type=float, required=True, help="Learning rate")
 
 	parser_predict = subparsers.add_parser("predict", help="Predict from a trained model")
-	parser_predict.add_argument('--data_path', type=str, default="data/raw/data.csv", help="Path to CSV data file")
+	parser_predict.add_argument('--data_path', type=str, help="Path to CSV data file")
 
 	args = parser.parse_args()
 
