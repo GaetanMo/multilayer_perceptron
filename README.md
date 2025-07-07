@@ -31,6 +31,8 @@ A simple feedforward neural network built entirely from scratch in Python — **
 
 ```bash
 git clone https://github.com/your-username/multilayer_perceptron.git
+```
+---
 
 ## 🔧 Usage
 
@@ -42,6 +44,7 @@ Split your raw dataset (CSV format) into training and validation sets:
 
 ```bash
 python main.py split
+```
 
 ### 2. Train the model
 
@@ -53,6 +56,7 @@ python main.py train \
   --epochs 84 \
   --batch_size 8 \
   --learning_rate 0.0314
+```
 
 --layer: Number of neurons in each hidden layer (you can specify multiple).
 
@@ -68,5 +72,6 @@ Run inference on a dataset using the previously trained model:
 
 ```bash
 python main.py predict --data_path data/raw/data.csv
+```
 
 ✅ Make sure that model.pkl (the trained model) exists before running predictions.
