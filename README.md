@@ -30,7 +30,7 @@ A simple feedforward neural network built entirely from scratch in Python — **
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your-username/multilayer_perceptron.git
+git clone https://github.com/GaetanMo/multilayer_perceptron.git
 ```
 ---
 
