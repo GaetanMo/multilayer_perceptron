@@ -98,7 +98,7 @@ class MLP:
 			total_loss_epoch_validation = 0
 			num_batches = 0
 			accuracy = 0
-			for i in range(0, len(df_train), self.batch_size):
+			for i in range(0, len(df_train), self.batch_size): # Training
 				batch = df_train.iloc[i:i+self.batch_size]
 				batch_delta = []
 				batch_delta.clear()
@@ -119,7 +119,7 @@ class MLP:
 				num_batches += 1
 			graph_train_accuracy.append((accuracy / len(df_train)) * 100)
 			accuracy = 0
-			for _, row in df_valid.iterrows():
+			for _, row in df_valid.iterrows(): # Validation
 				output = row[2:].values
 				label = row[1]
 				for layer in self.layers:
