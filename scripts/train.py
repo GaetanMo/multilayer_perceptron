@@ -17,8 +17,12 @@ def normalize(df):
 	return df, mean, std
 
 def train_model(layers, epochs, batch_size, lr):
-	df_train = pd.read_csv("data/processed/train.csv", header=None)
-	df_valid = pd.read_csv("data/processed/valid.csv", header=None)
+	try:
+		df_train = pd.read_csv("data/processed/train.csv", header=None)
+		df_valid = pd.read_csv("data/processed/valid.csv", header=None)
+	except:
+		print("Processed data not found !")
+		return
 
 	df_train, mean, std = normalize(df_train)
 	df_valid = normalize_with_mean_std(df_valid, mean, std)

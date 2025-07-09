@@ -12,6 +12,10 @@ def normalize(df):
 def predict_model(data_path):
 	df = pd.read_csv(data_path, header=None)
 	df = normalize(df)
-	with open('model.pkl', 'rb') as f:
-		mlp = pickle.load(f)
+	try:
+		with open('model.pkl', 'rb') as f:
+			mlp = pickle.load(f)
+	except:
+		print("File .pkl not found !")
+		return
 	mlp.predict(df)
