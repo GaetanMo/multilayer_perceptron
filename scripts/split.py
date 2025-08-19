@@ -1,6 +1,8 @@
 import pandas as pd
+import os
 
 def split_data():
+	os.makedirs("data/processed", exist_ok=True)
 	df = pd.read_csv("data/raw/data.csv", header=None)
 	df = df.sample(frac=1, random_state=38).reset_index(drop=True)
 
