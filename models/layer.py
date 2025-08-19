@@ -65,7 +65,7 @@ class Layer:
 			self.perceptrons[i] -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)	# Actualise weights
 
 		if self.previous_layer is not None:
-			weights_matrix = self.perceptrons[:, :-1]
+			weights_matrix = self.perceptrons[:, :-1] # take without biasis
 			z_means = np.mean(self.previous_layer.z_batch, axis=0)
 			delta_prev = np.dot(weights_matrix.T, delta) * relu_derivative(z_means)
 			self.last_input_batch.clear()

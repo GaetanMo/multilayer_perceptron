@@ -37,7 +37,7 @@ def is_correct(output, label):
 		return 0
 
 def cross_entropy(target, output):
-	output = np.clip(output, 1e-9, 1.0)
+	output = np.clip(output, 1e-9, 1.0) #avoid 0
 	return -np.sum(target * np.log(output))
 
 def save_weights(layers, filename="weights.npz"):
@@ -103,8 +103,9 @@ class MLP:
 				batch_delta = []
 				batch_delta.clear()
 				for _, row in batch.iterrows():
-					output = row[2:].values
+					features = row[2:].values
 					label = row[1]
+					output = features
 					for layer in self.layers:
 						output = layer.go_forward(output)
 					if is_correct(output, label) == 1:
